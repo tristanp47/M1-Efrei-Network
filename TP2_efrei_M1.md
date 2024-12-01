@@ -22,6 +22,10 @@ FastEthernet1/0            192.168.122.213 YES DHCP   up        up
 
 ```bash
 R1#ping 8.8.8.8
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 60/86/120 ms
 ```
 
 ### 🌞 Configuration d'un NAT simpliste
@@ -46,6 +50,10 @@ R1#ping 8.8.8.8
 #### Test de ping depuis PC1 :
 ```bash
 PC1> ping 8.8.8.8
+84 bytes from 8.8.8.8 icmp_seq=1 ttl=114 time=39.101 ms
+84 bytes from 8.8.8.8 icmp_seq=2 ttl=114 time=41.978 ms
+84 bytes from 8.8.8.8 icmp_seq=3 ttl=114 time=37.773 ms
+84 bytes from 8.8.8.8 icmp_seq=4 ttl=114 time=35.953 ms
 ```
 
 ### 🌞 Configuration DHCP
@@ -59,7 +67,16 @@ DORA IP 10.2.1.102/24 GW 10.2.1.254
 #### Tests de connectivité :
 ```bash
 PC4> ping 10.2.1.51
+84 bytes from 10.2.1.51 icmp_seq=1 ttl=64 time=1.812 ms
+84 bytes from 10.2.1.51 icmp_seq=2 ttl=64 time=1.146 ms
+84 bytes from 10.2.1.51 icmp_seq=3 ttl=64 time=1.228 ms
+84 bytes from 10.2.1.51 icmp_seq=4 ttl=64 time=1.215 ms
+
 PC4> ping 8.8.8.8
+84 bytes from 8.8.8.8 icmp_seq=1 ttl=114 time=39.831 ms
+84 bytes from 8.8.8.8 icmp_seq=2 ttl=114 time=37.853 ms
+84 bytes from 8.8.8.8 icmp_seq=3 ttl=114 time=38.441 ms
+84 bytes from 8.8.8.8 icmp_seq=4 ttl=114 time=37.227 ms
 ```
 
 ## II. Scapy
@@ -87,15 +104,29 @@ PC4> ping 8.8.8.8
   PC4> ip dhcp
   DDORA IP 10.2.1.228/24 GW 10.2.1.254
   ```
+**Capture qui montre que vous avez répondu un DHCP Offer avant le serveur DHCP légitime:**
+- Capture Wireshark : `🦈 dhcp_starvation_1.pcapng`
 
 #### B. DHCP starvation
-
+  ```bash
+  PC4> ip dhcp
+  DDD
+  Can't find dhcp server
+  ```
 - Script utilisé : `📜 dhcp_starvation.py`
-- Capture Wireshark : `🦈 dhcp_starvation_1.pcapng`
+- Capture qui montre les trames que votre machine attaquante envoie pendant l'attaque: `🦈 dhcp_starvation_1.pcapng`
+- VPCS qui n'arrive pas à obtenir une adresse IP: `🦈 dhcp_starvation_2.pcapng`
 
 ## IV. Attaques ARP
 
 ### A. Poisoning
+
+### 🌞 Injectez de fausses données dans la table ARP de PC1
+### Fausse mac pour la passerelle.
+  ```bash
+  PC2> arp
+  ff:ff:ff:ff:ff:ff  10.2.1.254 expires in 114 seconds
+  ```
 
 - Script : `📜 arp_poisoning.py`
 
