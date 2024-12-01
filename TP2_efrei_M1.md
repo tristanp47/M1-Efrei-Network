@@ -122,7 +122,7 @@ PC4> ping 8.8.8.8
 ### A. Poisoning
 
 ### 🌞 Injectez de fausses données dans la table ARP de PC1
-### Fausse mac pour la passerelle.
+#### Fausse mac pour la passerelle.
   ```bash
   PC2> arp
   ff:ff:ff:ff:ff:ff  10.2.1.254 expires in 114 seconds
@@ -132,12 +132,41 @@ PC4> ping 8.8.8.8
 
 ### B. Spoofing
 
+### 🌞 Mettez en place un ARP spoofing
+
+  ```bash
+  PC2> arp
+  08:00:27:f5:2c:64  10.2.1.51 expires in 118 seconds
+  ```
 - Script : `📜 arp_spoof.py`
+- Machine attaquante reçoit les pings a destinations de PC1 depuis PC2: `🦈 arp_spoof.pcapng`
 
 ### C. MITM
+### 🌞 Mettez en place un Man-in-the-middle ARP
+
+#### Se faire passer pour la passerelle auprès de PC1:
+  ```bash
+  PC1> arp
+  08:00:27:f5:2c:64  10.2.1.254 expires in 119 seconds
+  ```
+#### Se faire passer pour PC1 auprès de la passerelle:
+  ```bash
+  R1#show arp
+  Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+  Internet  10.2.1.52               0   0800.27f5.2c64  ARPA   FastEthernet0/0
+
+  PC1> ping 1.1.1.1
+
+  84 bytes from 1.1.1.1 icmp_seq=1 ttl=56 time=39.932 ms
+  84 bytes from 1.1.1.1 icmp_seq=2 ttl=56 time=41.603 ms
+  84 bytes from 1.1.1.1 icmp_seq=3 ttl=56 time=40.220 ms
+  84 bytes from 1.1.1.1 icmp_seq=4 ttl=56 time=40.776 ms
+  ```
+#### MITM effectif les trames entre PC1 et la passerelle transitent par le PC attaquant.
 
 - Script : `📜 arp_mitm.py`
 - Capture Wireshark : `🦈 arp_mitm.pcapng`
+
 
 ## V. DNS spoofing
 
@@ -147,7 +176,16 @@ PC4> ping 8.8.8.8
 
 ### Test depuis un VPCS
 
-- Résultat attendu : `Ping retourne l'IP choisie 17.37.17.37`
+#### Ping fonctionne depuis le VPCS mais retourne l'ip choisie 17.37.17.37 dans wireshark.
+  ```bash
+  PC1> ping efrei.fr
+  efrei.fr resolved to 51.255.68.208
+
+  84 bytes from 51.255.68.208 icmp_seq=1 ttl=52 time=40.136 ms
+  84 bytes from 51.255.68.208 icmp_seq=2 ttl=52 time=34.801 ms
+  ```
+
+- Capture qui montre les requètes DNS avec réponses légitimes et malveillante: `🦈 dns_spoof.pcapng`
 
 ## VI. Remediation
 
